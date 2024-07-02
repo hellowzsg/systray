@@ -13,7 +13,7 @@
 
 #endif
 
-@interface MenuItem : NSObject {
+@interface MenuItemV2 : NSObject {
   @public
     NSNumber* menuId;
     NSNumber* parentMenuId;
@@ -32,7 +32,7 @@ withParentMenuId: (int)theParentMenuId
     withDisabled: (short)theDisabled
      withChecked: (short)theChecked;
      @end
-     @implementation MenuItem
+     @implementation MenuItemV2
      -(id) initWithId: (int)theMenuId
      withParentMenuId: (int)theParentMenuId
             withTitle: (const char*)theTitle
@@ -53,14 +53,14 @@ withParentMenuId: (int)theParentMenuId
 }
 @end
 
-@interface AppDelegate: NSObject <NSApplicationDelegate>
-  - (void) add_or_update_menu_item:(MenuItem*) item;
+@interface AppDelegateV2: NSObject <NSApplicationDelegate>
+  - (void) add_or_update_menu_item:(MenuItemV2*) item;
   - (IBAction)menuHandler:(id)sender;
   - (void)statusOnClick:(NSButton *)btn;
   @property (assign) IBOutlet NSWindow *window;
   @end
 
-@implementation AppDelegate {
+@implementation AppDelegateV2 {
   NSStatusItem *statusItem;
   NSMenu *menu;
   NSCondition* cond;
@@ -73,7 +73,7 @@ withParentMenuId: (int)theParentMenuId
   self->menu = [[NSMenu alloc] init];
   [self->menu setAutoenablesItems: FALSE];
   //[self->statusItem.button setTarget:self];
-  //[self->menu setDelegate:(AppDelegate *)self];
+  //[self->menu setDelegate:(AppDelegateV2 *)self];
   //[self->statusItem.button setAction:@selector(statusOnClick:)];
   //[self->statusItem setMenu:self->menu]; //注释掉，不然不设置菜单事件也不启作用
   systray_ready();
@@ -115,7 +115,7 @@ withParentMenuId: (int)theParentMenuId
   systray_menu_item_selected(menuId.intValue);
 }
 
-- (void)add_or_update_menu_item:(MenuItem *)item {
+- (void)add_or_update_menu_item:(MenuItemV2 *)item {
   NSMenu *theMenu = self->menu;
   NSMenuItem *parentItem;
   //create_menu();
@@ -246,7 +246,7 @@ NSMenuItem *find_menu_item(NSMenu *ourMenu, NSNumber *menuId) {
 @end
 
 bool internalLoop = false;
-AppDelegate *owner;
+AppDelegateV2 *owner;
 
 void setInternalLoop(bool i) {
 	internalLoop = i;
@@ -256,7 +256,7 @@ void registerSystray(void) {
   if (!internalLoop) { // with an external loop we don't take ownership of the app
     return;
   }
-  owner = [[AppDelegate alloc] init];
+  owner = [[AppDelegateV2 alloc] init];
   [[NSApplication sharedApplication] setDelegate:owner];
 
   // A workaround to avoid crashing on macOS versions before Catalina. Somehow
@@ -279,7 +279,7 @@ int nativeLoop(void) {
 }
 
 void nativeStart(void) {
-  owner = [[AppDelegate alloc] init];
+  owner = [[AppDelegateV2 alloc] init];
   NSNotification *launched = [NSNotification
                                   notificationWithName: NSApplicationDidFinishLaunchingNotification
                                                 object: [NSApplication sharedApplication]];
@@ -326,7 +326,7 @@ void setTooltip(char* ctooltip) {
 }
 
 void add_or_update_menu_item(int menuId, int parentMenuId, char* title, char* tooltip, char* shortcutKey, short disabled, short checked, short isCheckable) {
-  MenuItem* item = [[MenuItem alloc] initWithId: menuId withParentMenuId: parentMenuId withTitle: title withTooltip: tooltip withShortcutKey: shortcutKey withDisabled: disabled withChecked: checked];
+  MenuItemV2* item = [[MenuItemV2 alloc] initWithId: menuId withParentMenuId: parentMenuId withTitle: title withTooltip: tooltip withShortcutKey: shortcutKey withDisabled: disabled withChecked: checked];
   free(title);
   free(tooltip);
   runInMainThread(@selector(add_or_update_menu_item:), (id)item);
